@@ -12,7 +12,7 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
     ApiResponse.success(res, summary);
 });
 
-/**
+/**HI
  * @desc    Get sales report
  * @route   GET /api/reports/sales
  * @access  Private (Admin)
