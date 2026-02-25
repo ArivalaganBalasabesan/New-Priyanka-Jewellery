@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const MetalRate = require('../models/MetalRate');
 const StoneRate = require('../models/StoneRate');
@@ -118,6 +119,75 @@ const seedDatabase = async () => {
             }
         }
         console.log('✅ Stone rates seeded');
+
+        // Seed Sample Customers
+        const customerCount = await mongoose.model('Customer').countDocuments();
+        if (customerCount === 0) {
+            const sampleCustomers = [
+                { name: 'John Doe', email: 'john@example.com', phone: '9876543210', address: { street: 'Main St', city: 'Mumbai', state: 'MH', pincode: '400001' }, isActive: true, loyaltyPoints: 50 },
+                { name: 'Jane Smith', email: 'jane@example.com', phone: '9876543211', address: { street: 'Park Rd', city: 'Chennai', state: 'TN', pincode: '600001' }, isActive: true, loyaltyPoints: 120 }
+            ];
+            await mongoose.model('Customer').insertMany(sampleCustomers);
+            console.log('✅ Sample customers seeded');
+        }
+
+        // Seed Sample Sales for Analytics
+        const saleCount = await mongoose.model('Sale').countDocuments();
+        if (saleCount === 0) {
+            const customers = await mongoose.model('Customer').find();
+            const products = await mongoose.model('Product').find();
+            const admin = await User.findOne({ role: 'admin' });
+
+            if (customers.length > 0 && products.length > 0 && admin) {
+                const sampleSales = [
+                    {
+                        customerId: customers[0]._id,
+                        items: [{
+                            productId: products[0]._id,
+                            productName: products[0].name,
+                            quantity: 1,
+                            unitPrice: products[0].pricing.finalPrice,
+                            metalRate: 6500,
+                            itemTotal: products[0].pricing.finalPrice
+                        }],
+                        subtotal: products[0].pricing.finalPrice,
+                        totalAmount: products[0].pricing.finalPrice,
+                        finalAmount: products[0].pricing.finalPrice,
+                        paymentStatus: 'completed',
+                        paymentMethod: 'card',
+                        soldBy: admin._id,
+                        saleDate: new Date(new Date().setDate(new Date().getDate() - 2)) // 2 days ago
+                    },
+                    {
+                        customerId: customers[1]._id,
+                        items: [{
+                            productId: products[1]._id,
+                            productName: products[1].name,
+                            quantity: 1,
+                            unitPrice: products[1].pricing.finalPrice,
+                            metalRate: 6500,
+                            itemTotal: products[1].pricing.finalPrice
+                        }],
+                        subtotal: products[1].pricing.finalPrice,
+                        totalAmount: products[1].pricing.finalPrice,
+                        finalAmount: products[1].pricing.finalPrice,
+                        paymentStatus: 'completed',
+                        paymentMethod: 'upi',
+                        soldBy: admin._id,
+                        saleDate: new Date() // Today
+                    }
+                ];
+                await mongoose.model('Sale').insertMany(sampleSales);
+                console.log('✅ Sample sales seeded');
+            }
+        }
+
+        // Generate initial analytics snapshots
+        const analyticsService = require('../modules/analytics/analyticsService');
+        await analyticsService.generateDailySnapshot(new Date(new Date().setDate(new Date().getDate() - 2)));
+        await analyticsService.generateDailySnapshot(new Date(new Date().setDate(new Date().getDate() - 1)));
+        await analyticsService.generateDailySnapshot(new Date());
+        console.log('✅ Initial analytics snapshots generated');
 
     } catch (error) {
         console.error('❌ Seeding error:', error.message);

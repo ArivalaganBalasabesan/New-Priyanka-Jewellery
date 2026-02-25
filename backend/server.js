@@ -73,6 +73,7 @@ app.use('/api/payment', require('./modules/payment/paymentRoutes'));
 app.use('/api/ai', require('./modules/ai/aiRoutes'));
 const pricingRoutes = require('./modules/pricing/pricingRoutes');
 app.use('/api/pricing', pricingRoutes);
+app.use('/api/analytics', require('./modules/analytics/analyticsRoutes'));
 
 // Init Pricing Cron
 const pricingService = require('./modules/pricing/pricingService');

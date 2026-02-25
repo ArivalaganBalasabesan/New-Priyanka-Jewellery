@@ -111,3 +111,9 @@ export const pricingService = {
     override: (data) => api.put('/pricing/override', data),
     updateNow: () => api.post('/pricing/update-now'),
 };
+
+// Analytics (Admin)
+export const analyticsService = {
+    getAnalytics: (params) => api.get('/analytics', { params }),
+    generateSnapshot: (data) => api.post('/analytics/snapshot', data),
+};
