@@ -22,7 +22,7 @@ class OrderService {
     }
 
     /**
-     * Get all orders
+     * Get all orders for the cust
      */
     async getAllOrders(query = {}) {
         const { page = 1, limit = 20, status, customerId } = query;
