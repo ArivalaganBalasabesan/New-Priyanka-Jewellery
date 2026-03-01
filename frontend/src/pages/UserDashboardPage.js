@@ -21,6 +21,12 @@ const UserDashboardPage = () => {
     const [paymentHistory, setPaymentHistory] = useState([]);
     const [payingOrderId, setPayingOrderId] = useState(null);
 
+    const getImageUrl = (url) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `${process.env.REACT_APP_API_URL}${url}`;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -302,9 +308,9 @@ const UserDashboardPage = () => {
                     {designs.map(design => (
                         <div key={design._id} className="ud-design-card">
                             <div className="ud-design-image">
-                                <img src={design.generatedImageURL} alt={design.prompt} />
+                                <img src={getImageUrl(design.generatedImageURL)} alt={design.prompt} />
                                 <div className="ud-design-overlay">
-                                    <a href={design.generatedImageURL} download className="ud-design-dl-btn">
+                                    <a href={getImageUrl(design.generatedImageURL)} download className="ud-design-dl-btn">
                                         <FiDownload />
                                     </a>
                                 </div>

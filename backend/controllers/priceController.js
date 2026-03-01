@@ -74,6 +74,21 @@ const getPriceHistory = asyncHandler(async (req, res) => {
     ApiResponse.paginated(res, result.history, result.pagination);
 });
 
+/**
+ * @desc    Sync metal rates with live market API
+ * @route   POST /api/rates/sync
+ * @access  Private (Admin)
+ */
+const syncMarketRates = asyncHandler(async (req, res) => {
+    const { fetchMetalRatesFromAPI, updateMetalRates } = require('../cron/rateUpdateJob');
+    const metalRates = await fetchMetalRatesFromAPI();
+    await updateMetalRates(metalRates, 'api');
+
+    // Fetch updated data from DB
+    const rates = await priceService.getAllMetalRates();
+    ApiResponse.success(res, rates, 'Market rates synced successfully');
+});
+
 module.exports = {
     getAllMetalRates,
     getMetalRate,
@@ -82,4 +97,5 @@ module.exports = {
     getStoneRate,
     updateStoneRate,
     getPriceHistory,
+    syncMarketRates,
 };

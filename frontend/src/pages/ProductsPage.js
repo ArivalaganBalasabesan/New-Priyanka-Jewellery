@@ -84,7 +84,7 @@ const ProductsPage = () => {
     };
 
     const formatCurrency = (amount) =>
-        new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount || 0);
+        new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(amount || 0);
 
     return (
         <MainLayout title="Products">

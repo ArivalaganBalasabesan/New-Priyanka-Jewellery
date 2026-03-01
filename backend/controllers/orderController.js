@@ -1,6 +1,10 @@
 const orderService = require('../services/orderService');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/ApiResponse');
+const ApiError = require('../utils/ApiError');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
 /**
  * @desc    Create custom order
@@ -92,6 +96,34 @@ const markAsSeen = asyncHandler(async (req, res) => {
     ApiResponse.success(res, order, 'Order marked as seen');
 });
 
+/**
+ * @desc    Upload manual photo for custom order
+ * @route   POST /api/orders/upload-image
+ * @access  Private
+ */
+const uploadCustomImage = asyncHandler(async (req, res) => {
+    const { base64Image } = req.body;
+    if (!base64Image) {
+        throw ApiError.badRequest('No image provided');
+    }
+
+    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    const customDir = path.join(process.cwd(), 'public', 'uploads', 'custom');
+    if (!fs.existsSync(customDir)) {
+        fs.mkdirSync(customDir, { recursive: true });
+    }
+
+    const fileName = `custom_${crypto.randomBytes(8).toString('hex')}.jpeg`;
+    const filePath = path.join(customDir, fileName);
+
+    fs.writeFileSync(filePath, imageBuffer);
+    const imageUrl = `/uploads/custom/${fileName}`;
+
+    ApiResponse.success(res, { url: imageUrl }, 'Image uploaded locally');
+});
+
 module.exports = {
     createOrder,
     getAllOrders,
@@ -102,4 +134,5 @@ module.exports = {
     getMyOrders,
     requestQuote,
     markAsSeen,
+    uploadCustomImage,
 };

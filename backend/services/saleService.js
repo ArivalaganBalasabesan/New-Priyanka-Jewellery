@@ -99,7 +99,7 @@ class SaleService {
         // Add to customer purchase history
         await customerService.addToPurchaseHistory(customerId, sale._id);
 
-        // Add loyalty points (1 point per 1000 INR spent)
+        // Add loyalty points (1 point per 1000 LKR spent)
         const loyaltyPoints = Math.floor(finalAmount / 1000);
         if (loyaltyPoints > 0) {
             await customerService.addLoyaltyPoints(customerId, loyaltyPoints);

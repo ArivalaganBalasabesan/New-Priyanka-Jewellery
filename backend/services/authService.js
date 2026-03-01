@@ -83,7 +83,58 @@ class AuthService {
             throw ApiError.unauthorized('Invalid email or password');
         }
 
-        // Update last login
+        // If user is admin or staff, skip OTP and login directly
+        if (user.role === 'admin' || user.role === 'staff') {
+            user.lastLogin = new Date();
+            await user.save();
+            const token = generateToken(user._id);
+            return { user: user.toJSON(), token, requiresOtp: false };
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Hash OTP and set expiry (10 mins)
+        const bcrypt = require('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        user.otp = await bcrypt.hash(otp, salt);
+        user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+        await user.save();
+
+        // Send OTP
+        const sendEmail = require('../utils/sendEmail');
+        await sendEmail({
+            email: user.email,
+            subject: 'Your Login OTP',
+            message: `Your login OTP is: ${otp}. It is valid for 10 minutes.`,
+        });
+
+        return { requiresOtp: true, email: user.email };
+    }
+
+    /**
+     * Verify OTP
+     */
+    async verifyOtp(email, otp) {
+        const user = await User.findOne({ email }).select('+otp +otpExpires');
+
+        if (!user || !user.otp || !user.otpExpires) {
+            throw ApiError.badRequest('Invalid or expired OTP');
+        }
+
+        if (user.otpExpires < new Date()) {
+            throw ApiError.badRequest('OTP has expired');
+        }
+
+        const bcrypt = require('bcryptjs');
+        const isMatch = await bcrypt.compare(otp.toString(), user.otp);
+        if (!isMatch) {
+            throw ApiError.badRequest('Invalid OTP');
+        }
+
+        // Clear OTP
+        user.otp = undefined;
+        user.otpExpires = undefined;
         user.lastLogin = new Date();
         await user.save();
 

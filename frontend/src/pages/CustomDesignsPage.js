@@ -15,6 +15,12 @@ const CustomDesignsPage = () => {
     const { loading, execute } = useApi();
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
+    const getImageUrl = (url) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `${process.env.REACT_APP_API_URL}${url}`;
+    };
+
     useEffect(() => { loadCustomDesigns(); }, []);
 
     const loadCustomDesigns = async () => {
@@ -61,7 +67,7 @@ const CustomDesignsPage = () => {
         return map[s] || 'badge-pending';
     };
 
-    const fmt = (a) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(a || 0);
+    const fmt = (a) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(a || 0);
 
     return (
         <MainLayout title="Custom Design Requests">
@@ -84,7 +90,7 @@ const CustomDesignsPage = () => {
                         orders.map((o) => (
                             <div key={o._id} className="card design-card" onClick={() => handleMarkAsSeen(o)}>
                                 <div className="design-image-track">
-                                    <img src={o.designImageUrl} alt="Design" onClick={() => window.open(o.designImageUrl, '_blank')} />
+                                    <img src={getImageUrl(o.designImageUrl)} alt="Design" onClick={() => window.open(getImageUrl(o.designImageUrl), '_blank')} />
                                     <div className="design-status-overlay">
                                         {!o.isAdminSeen && <span className="badge badge-new pulse-new">NEW</span>}
                                         <span className={`badge ${statusBadge(o.status)}`}>{o.status}</span>
@@ -121,7 +127,7 @@ const CustomDesignsPage = () => {
                 {selectedOrder && (
                     <div className="pricing-modal-content">
                         <div className="mini-design-info">
-                            <img src={selectedOrder.designImageUrl} alt="Preview" />
+                            <img src={getImageUrl(selectedOrder.designImageUrl)} alt="Preview" />
                             <div>
                                 <strong>Request from {selectedOrder.customerId?.name}</strong>
                                 <p>{selectedOrder.designDetails}</p>

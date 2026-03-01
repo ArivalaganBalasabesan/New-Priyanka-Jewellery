@@ -17,7 +17,7 @@ const priceHistorySchema = new mongoose.Schema(
         },
         unit: {
             type: String,
-            default: 'INR',
+            default: 'LKR',
         },
         source: {
             type: String,

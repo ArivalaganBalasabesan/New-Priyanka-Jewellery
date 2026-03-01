@@ -35,7 +35,7 @@ class PaymentService {
             line_items = cartData.items.map(item => {
                 const lineItem = {
                     price_data: {
-                        currency: 'inr',
+                        currency: 'lkr',
                         product_data: {
                             name: item.name || 'Jewelry Item',
                         },
@@ -95,7 +95,7 @@ class PaymentService {
             line_items = [
                 {
                     price_data: {
-                        currency: 'inr',
+                        currency: 'lkr',
                         product_data: {
                             name: `Custom Order: ${order.orderNumber}`,
                             description: order.designDetails.substring(0, 200),
@@ -124,54 +124,61 @@ class PaymentService {
         return { sessionId: session.id, url: session.url };
     }
 
-    /**
-     * Verify payment and update order status
-     */
     async verifyPayment(sessionId) {
         if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe')) {
             throw ApiError.badRequest('Stripe is not configured');
         }
 
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        try {
+            const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-        if (session.payment_status === 'paid') {
-            const { orderId, saleId, isCart } = session.metadata;
+            if (session.payment_status === 'paid') {
+                const { orderId, saleId, isCart } = session.metadata;
 
-            if (isCart === 'true' && saleId) {
-                const sale = await Sale.findById(saleId);
-                if (sale && sale.paymentStatus !== 'completed') {
-                    sale.paymentStatus = 'completed';
-                    sale.paymentMethod = 'card';
-                    await sale.save();
+                if (isCart === 'true' && saleId) {
+                    const sale = await Sale.findById(saleId).populate('customerId');
+                    if (sale && sale.paymentStatus !== 'paid') {
+                        sale.paymentStatus = 'paid';
+                        sale.paymentMethod = 'card';
+                        await sale.save();
+                    }
+                    return {
+                        success: true,
+                        type: 'cart',
+                        sale: sale,
+                        saleId,
+                        amountPaid: session.amount_total / 100,
+                        paymentStatus: session.payment_status,
+                    };
+                } else if (orderId) {
+                    const order = await Order.findById(orderId).populate('customerId');
+                    if (order && order.status === 'Pending') {
+                        order.status = 'In Progress';
+                        order.advancePayment = session.amount_total / 100;
+                        await order.save();
+                    }
+
+                    return {
+                        success: true,
+                        type: 'order',
+                        order: order,
+                        orderId,
+                        orderNumber: session.metadata.orderNumber,
+                        amountPaid: session.amount_total / 100,
+                        paymentStatus: session.payment_status,
+                    };
                 }
-                return {
-                    success: true,
-                    saleId,
-                    amountPaid: session.amount_total / 100,
-                    paymentStatus: session.payment_status,
-                };
-            } else if (orderId) {
-                const order = await Order.findById(orderId);
-                if (order && order.status === 'Pending') {
-                    order.status = 'In Progress';
-                    order.advancePayment = session.amount_total / 100;
-                    await order.save();
-                }
-
-                return {
-                    success: true,
-                    orderId,
-                    orderNumber: session.metadata.orderNumber,
-                    amountPaid: session.amount_total / 100,
-                    paymentStatus: session.payment_status,
-                };
             }
-        }
 
-        return {
-            success: false,
-            paymentStatus: session.payment_status,
-        };
+            return {
+                success: false,
+                paymentStatus: session.payment_status,
+                message: 'Payment was not successful yet.'
+            };
+        } catch (error) {
+            console.error('Stripe Verification Error:', error);
+            throw ApiError.badRequest('Failed to verify payment session: ' + error.message);
+        }
     }
 
     /**

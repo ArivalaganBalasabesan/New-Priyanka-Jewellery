@@ -10,11 +10,11 @@ class AIController {
      * @access  Private
      */
     generate = asyncHandler(async (req, res) => {
-        const { jewelryType, metalType, stoneType, styleDescription } = req.body;
+        const { jewelryType, metalType, stoneType, styleDescription, base64Image, aiInfluence } = req.body;
 
         // Get AI image URL + reliable fallback
-        const { aiUrl, fallbackUrl } = aiService.generateDesignUrls(
-            jewelryType, metalType, stoneType, styleDescription
+        const { aiUrl, fallbackUrl } = await aiService.generateDesignUrls(
+            jewelryType, metalType, stoneType, styleDescription, base64Image, aiInfluence
         );
 
         const design = await CustomDesign.create({

@@ -19,6 +19,24 @@ const DesignJewelryPage = () => {
     const [quoteNotes, setQuoteNotes] = useState('');
     const [preferredDate, setPreferredDate] = useState('');
 
+    // Img2Img State
+    const [referenceImage, setReferenceImage] = useState(null);
+    const [referenceImageBase64, setReferenceImageBase64] = useState('');
+    const [aiInfluence, setAiInfluence] = useState(50); // 0 = original, 100 = full AI hallucination
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setReferenceImage(URL.createObjectURL(file));
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setReferenceImageBase64(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const getImageUrl = (url) => {
         if (!url) return '';
         if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -31,7 +49,15 @@ const DesignJewelryPage = () => {
             setDesignData(null);
             setDisplayUrl(null);
             setQuoteSubmitted(false);
-            const response = await aiService.generate(data);
+
+            // Inject base64 string into form data natively
+            const submitData = {
+                ...data,
+                base64Image: referenceImageBase64 || null,
+                aiInfluence: aiInfluence
+            };
+
+            const response = await aiService.generate(submitData);
             if (response.data && response.data.success) {
                 const result = response.data.data;
                 setDesignData(result);
@@ -178,6 +204,39 @@ const DesignJewelryPage = () => {
                                 ></textarea>
                                 {errors.styleDescription && <span className="form-error">{errors.styleDescription.message}</span>}
                             </div>
+
+                            <div className="form-group mb-4">
+                                <label className="form-label">Reference Image (Optional)</label>
+                                <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '10px' }}>Upload a sketch or base photo to let the AI build upon it.</p>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="form-control"
+                                    onChange={handleImageUpload}
+                                />
+                                {referenceImage && (
+                                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                                        <img src={referenceImage} alt="Reference Preview" style={{ maxWidth: '100px', borderRadius: '8px', border: '1px solid #ddd' }} />
+                                    </div>
+                                )}
+                            </div>
+
+                            {referenceImage && (
+                                <div className="form-group mb-4">
+                                    <label className="form-label">AI Creativity Influence: {aiInfluence}%</label>
+                                    <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '5px' }}>
+                                        {aiInfluence < 30 ? "Strictly follows your sketch" : aiInfluence > 70 ? "AI ignores sketch and gets creative" : "Balanced enhancement"}
+                                    </p>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={aiInfluence}
+                                        onChange={(e) => setAiInfluence(e.target.value)}
+                                        className="form-range w-100"
+                                    />
+                                </div>
+                            )}
 
                             <button
                                 type="submit"

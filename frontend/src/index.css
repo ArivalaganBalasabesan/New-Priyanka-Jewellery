@@ -238,6 +238,16 @@ textarea {
   min-width: 20px;
 }
 
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.icon-spin {
+  animation: spin 1.5s linear infinite;
+}
+
 /* ============================================
    HEADER
    ============================================ */

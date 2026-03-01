@@ -58,14 +58,14 @@ module.exports = {
     // Cron Schedule - Every 24 hours at midnight
     RATE_UPDATE_CRON: '0 0 * * *',
 
-    // Default Metal Rates (fallback if API fails, in INR per gram)
+    // Default Metal Rates (fallback if API fails, in LKR per gram)
     DEFAULT_METAL_RATES: {
         gold: 6500,
         silver: 85,
         platinum: 3200,
     },
 
-    // Default Stone Rates (fallback, in INR per carat)
+    // Default Stone Rates (fallback, in LKR per carat)
     DEFAULT_STONE_RATES: {
         diamond: 35000,
         ruby: 15000,

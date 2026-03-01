@@ -16,11 +16,12 @@ const Sidebar = () => {
     const [pendingDesignCount, setPendingDesignCount] = useState(0);
 
     useEffect(() => {
-        if (user?.role !== 'customer') {
+        if (user && (user.role === 'admin' || user.role === 'staff')) {
             loadPendingCounts();
         }
     }, [user, location.pathname]);
 
+    // ... keeping the rest the same until the bottom section ...
     const loadPendingCounts = async () => {
         try {
             // Fetch orders that have a design image and are NOT yet seen by admin
@@ -85,6 +86,7 @@ const Sidebar = () => {
             label: 'Shopping Cart'
         },
         { path: '/ai-design', icon: <FiImage />, label: 'AI Designer' },
+        { path: '/upload-custom', icon: <FiPackage />, label: 'Custom Build Request' },
     ];
 
     const adminItems = [
@@ -94,7 +96,7 @@ const Sidebar = () => {
 
     return (
         <aside className="sidebar">
-            <div className="sidebar-brand">
+            <div className="sidebar-brand" style={{ cursor: 'pointer' }} onClick={() => window.location.href = '/catalog'}>
                 <div style={{
                     width: 44, height: 44, margin: '0 auto 12px',
                     background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
@@ -118,7 +120,7 @@ const Sidebar = () => {
                         </NavLink>
                         <NavLink to="/login" className="nav-item">
                             <FiLogOut />
-                            <span>Login to Order</span>
+                            <span>Login or Register</span>
                         </NavLink>
                     </>
                 ) : user?.role === 'customer' ? (
@@ -168,44 +170,46 @@ const Sidebar = () => {
                 )}
             </nav>
 
-            <div style={{
-                padding: '16px 12px',
-                borderTop: '1px solid var(--border)',
-                marginTop: 'auto'
-            }}>
-                <NavLink
-                    to="/profile"
-                    className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
-                    style={{ marginBottom: 8 }}
-                >
-                    <div style={{
-                        width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', marginRight: 10,
-                        background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700
-                    }}>
-                        {user?.profilePicture ? (
-                            <img src={user.profilePicture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                            user?.name?.charAt(0)?.toUpperCase()
-                        )}
-                    </div>
-                    <span>Settings</span>
-                </NavLink>
-                <button
-                    onClick={logout}
-                    className="nav-item"
-                    style={{
-                        width: '100%',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: 'var(--danger)',
-                    }}
-                >
-                    <FiLogOut />
-                    <span>Logout</span>
-                </button>
-            </div>
+            {user && (
+                <div style={{
+                    padding: '16px 12px',
+                    borderTop: '1px solid var(--border)',
+                    marginTop: 'auto'
+                }}>
+                    <NavLink
+                        to="/profile"
+                        className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
+                        style={{ marginBottom: 8 }}
+                    >
+                        <div style={{
+                            width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', marginRight: 10,
+                            background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 700
+                        }}>
+                            {user?.profilePicture ? (
+                                <img src={user.profilePicture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                user?.name?.charAt(0)?.toUpperCase()
+                            )}
+                        </div>
+                        <span>Settings</span>
+                    </NavLink>
+                    <button
+                        onClick={logout}
+                        className="nav-item"
+                        style={{
+                            width: '100%',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--danger)',
+                        }}
+                    >
+                        <FiLogOut />
+                        <span>Logout</span>
+                    </button>
+                </div>
+            )}
         </aside>
     );
 };

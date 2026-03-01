@@ -8,6 +8,7 @@ const {
     getStoneRate,
     updateStoneRate,
     getPriceHistory,
+    syncMarketRates,
 } = require('../controllers/priceController');
 const { protect } = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
@@ -19,6 +20,7 @@ router.use(protect);
 router.get('/metals', getAllMetalRates);
 router.get('/metals/:metal', getMetalRate);
 router.put('/metals', authorize('admin'), metalRateValidation, updateMetalRate);
+router.post('/sync', authorize('admin'), syncMarketRates);
 
 // Stone rates
 router.get('/stones', getAllStoneRates);

@@ -33,7 +33,7 @@ const ReportsPage = () => {
         } catch (err) { console.error(err); }
     };
 
-    const fmt = (a) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(a || 0);
+    const fmt = (a) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(a || 0);
 
     if (loading && !dashboard) return <MainLayout title="Reports"><LoadingSpinner /></MainLayout>;
 

@@ -26,14 +26,24 @@ const register = asyncHandler(async (req, res) => {
     ApiResponse.created(res, { user, token }, 'User registered successfully');
 });
 
-/**
- * @desc    Login user
- * @route   POST /api/auth/login
- * @access  Public
- */
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const { user, token } = await authService.login(email, password);
+    const result = await authService.login(email, password);
+    if (result.requiresOtp) {
+        ApiResponse.success(res, result, 'OTP sent to email. Please verify.');
+    } else {
+        ApiResponse.success(res, result, 'Login successful');
+    }
+});
+
+/**
+ * @desc    Verify OTP
+ * @route   POST /api/auth/verify-otp
+ * @access  Public
+ */
+const verifyOtp = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+    const { user, token } = await authService.verifyOtp(email, otp);
     ApiResponse.success(res, { user, token }, 'Login successful');
 });
 
@@ -86,8 +96,10 @@ const googleLogin = asyncHandler(async (req, res) => {
 module.exports = {
     register,
     login,
+    verifyOtp,
     googleLogin,
     getProfile,
     updateProfile,
     changePassword,
 };
+

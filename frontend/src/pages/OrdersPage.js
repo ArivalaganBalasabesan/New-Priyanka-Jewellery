@@ -78,7 +78,7 @@ const OrdersPage = () => {
         return map[s] || 'badge-pending';
     };
 
-    const fmt = (a) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(a || 0);
+    const fmt = (a) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(a || 0);
 
     return (
         <MainLayout title="Custom Orders">

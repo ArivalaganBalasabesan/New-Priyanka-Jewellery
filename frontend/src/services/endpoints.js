@@ -2,9 +2,10 @@ import api from './api';
 
 // Auth
 export const authService = {
-    login: (data) => api.post('/auth/login', data),
-    googleLogin: (data) => api.post('/auth/google-login', data),
     register: (data) => api.post('/auth/register', data),
+    login: (data) => api.post('/auth/login', data),
+    verifyOtp: (data) => api.post('/auth/verify-otp', data),
+    googleLogin: (data) => api.post('/auth/google-login', data),
     getProfile: () => api.get('/auth/profile'),
     updateProfile: (data) => api.put('/auth/profile', data),
     changePassword: (data) => api.put('/auth/change-password', data),
@@ -72,6 +73,7 @@ export const orderService = {
     updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
     cancel: (id, reason) => api.put(`/orders/${id}/cancel`, { reason }),
     requestQuote: (data) => api.post('/orders/request-quote', data),
+    uploadCustomImage: (data) => api.post('/orders/upload-image', data),
     markAsSeen: (id) => api.put(`/orders/${id}/seen`),
 };
 
@@ -82,6 +84,7 @@ export const rateService = {
     updateMetalRate: (data) => api.put('/rates/metals', data),
     updateStoneRate: (data) => api.put('/rates/stones', data),
     getPriceHistory: (params) => api.get('/rates/history', { params }),
+    syncMarketRates: () => api.post('/rates/sync'),
 };
 
 // Reports

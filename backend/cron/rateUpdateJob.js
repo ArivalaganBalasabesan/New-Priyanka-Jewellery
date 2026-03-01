@@ -11,32 +11,34 @@ const { RATE_UPDATE_CRON, DEFAULT_METAL_RATES, DEFAULT_STONE_RATES } = require('
  */
 const fetchMetalRatesFromAPI = async () => {
     try {
-        console.log('🔄 Fetching metal rates from external API...');
+        console.log('🔄 Fetching real-time metal rates in LKR from global market...');
 
-        // Try to fetch from metals API
-        const response = await axios.get(process.env.METAL_API_URL, {
-            params: {
-                access_key: process.env.METAL_API_KEY,
-                base: 'INR',
-                symbols: 'XAU,XAG,XPT', // Gold, Silver, Platinum
+        // Fetching live global spot prices in LKR
+        const response = await axios.get('https://data-asg.goldprice.org/dbXRates/LKR', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             },
             timeout: 10000,
         });
 
-        if (response.data && response.data.success) {
-            const rates = response.data.rates;
+        if (response.data && response.data.items && response.data.items.length > 0) {
+            const rates = response.data.items[0];
 
-            // Convert from troy ounce to gram (1 troy ounce = 31.1035g)
+            // The API returns the price per 1 Troy Ounce.
+            // 1 Troy Ounce = 31.1034768 grams.
+            const troyOunceInGrams = 31.1034768;
+
             const metalRates = {
-                gold: Math.round((1 / rates.XAU) * 31.1035 * 100) / 100,
-                silver: Math.round((1 / rates.XAG) * 31.1035 * 100) / 100,
-                platinum: Math.round((1 / rates.XPT) * 31.1035 * 100) / 100,
+                gold: Math.round((rates.xauPrice / troyOunceInGrams) * 100) / 100,
+                silver: Math.round((rates.xagPrice / troyOunceInGrams) * 100) / 100,
+                // Platinum isn't always returned directly on this endpoint, so we fallback mathematically or fetch if available
+                platinum: rates.xptPrice ? Math.round((rates.xptPrice / troyOunceInGrams) * 100) / 100 : DEFAULT_METAL_RATES.platinum,
             };
 
             return metalRates;
         }
 
-        throw new Error('API response unsuccessful');
+        throw new Error('API response unsuccessful or invalid data format');
     } catch (error) {
         console.warn(`⚠️  Metal API fetch failed: ${error.message}`);
         console.log('📌 Using last stored rates or defaults...');

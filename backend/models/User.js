@@ -48,6 +48,14 @@ const userSchema = new mongoose.Schema(
         lastLogin: {
             type: Date,
         },
+        otp: {
+            type: String, // Hashed OTP
+            select: false,
+        },
+        otpExpires: {
+            type: Date,
+            select: false,
+        },
     },
     {
         timestamps: true,

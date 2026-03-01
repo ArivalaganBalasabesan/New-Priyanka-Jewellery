@@ -22,6 +22,7 @@ import ReportsPage from './pages/ReportsPage';
 import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
 import CustomDesignsPage from './pages/CustomDesignsPage';
+import CustomPhotoUploadPage from './pages/CustomPhotoUploadPage';
 import CatalogPage from './pages/CatalogPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -54,6 +55,7 @@ function App() {
                         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                         <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboardPage /></ProtectedRoute>} />
                         <Route path="/ai-design" element={<ProtectedRoute><DesignJewelryPage /></ProtectedRoute>} />
+                        <Route path="/upload-custom" element={<ProtectedRoute><CustomPhotoUploadPage /></ProtectedRoute>} />
                         <Route path="/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} />
                         <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
                         <Route path="/sales" element={<ProtectedRoute><SalesPage /></ProtectedRoute>} />

@@ -4,7 +4,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import useApi from '../hooks/useApi';
 import { rateService } from '../services/endpoints';
 import { useAuth } from '../context/AuthContext';
-import { FiSave, FiTrendingUp, FiClock } from 'react-icons/fi';
+import { FiSave, FiTrendingUp, FiClock, FiRefreshCw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 const RatesPage = () => {
@@ -53,13 +53,38 @@ const RatesPage = () => {
         } catch (err) { toast.error('Failed to update rate'); }
     };
 
-    const fmt = (a) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(a || 0);
+    const fmt = (a) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(a || 0);
+
+    const syncMarketRates = async () => {
+        try {
+            await execute(() => rateService.syncMarketRates());
+            toast.success('Successfully synced exact global market rate!');
+            loadRates();
+            loadHistory();
+        } catch (err) { toast.error('Failed to sync real-time market rate'); }
+    };
 
     if (loading && !metalRates.length) return <MainLayout title="Rates"><LoadingSpinner /></MainLayout>;
 
     return (
         <MainLayout title="Price Rates">
-            <div className="page-header"><div><h1>Dynamic Price Rates</h1><p>Manage metal and stone rates for dynamic pricing</p></div></div>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h1>Dynamic Price Rates</h1>
+                    <p>Manage real-time global metal and stone pricing</p>
+                </div>
+                {isAdmin() && (
+                    <button
+                        className="btn btn-primary"
+                        onClick={syncMarketRates}
+                        disabled={loading}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <FiRefreshCw className={loading ? 'icon-spin' : ''} />
+                        Sync Market Rate
+                    </button>
+                )}
+            </div>
 
             {/* Metal Rates */}
             <div className="card" style={{ marginBottom: 24 }}>

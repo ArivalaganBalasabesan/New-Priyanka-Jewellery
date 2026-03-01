@@ -43,6 +43,21 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const response = await authService.login({ email, password });
+
+        // If the backend returns a token right away (e.g. for admin), save it
+        if (response.data?.data && response.data.data.requiresOtp === false) {
+            const { user: userData, token: authToken } = response.data.data;
+            setUser(userData);
+            setToken(authToken);
+            localStorage.setItem('token', authToken);
+            localStorage.setItem('user', JSON.stringify(userData));
+        }
+
+        return response.data; // frontend will check if requiresOtp
+    };
+
+    const verifyOtp = async (email, otp) => {
+        const response = await authService.verifyOtp({ email, otp });
         const { user: userData, token: authToken } = response.data.data;
 
         setUser(userData);
@@ -79,6 +94,7 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         login,
+        verifyOtp,
         loginWithGoogle,
         logout,
         isAdmin,
