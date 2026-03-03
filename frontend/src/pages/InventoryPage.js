@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 
 const InventoryPage = () => {
     const [inventory, setInventory] = useState([]);
+    const [products, setProducts] = useState([]);
     const [lowStockAlerts, setLowStockAlerts] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [showLowStock, setShowLowStock] = useState(false);
@@ -19,6 +20,7 @@ const InventoryPage = () => {
     useEffect(() => {
         loadInventory();
         loadLowStock();
+        loadProducts();
     }, []);
 
     const loadInventory = async () => {
@@ -27,6 +29,15 @@ const InventoryPage = () => {
             setInventory(data.data);
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const loadProducts = async () => {
+        try {
+            const res = await execute(() => import('../services/endpoints').then(m => m.productService.getAll({ limit: 1000 })));
+            setProducts(res.data);
+        } catch (err) {
+            console.error('Failed to load products', err);
         }
     };
 
@@ -145,9 +156,18 @@ const InventoryPage = () => {
             <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Add Stock" size="sm">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-group">
-                        <label>Product ID</label>
-                        <input className="form-control" {...register('productId', { required: 'Product ID is required' })}
-                            placeholder="Enter MongoDB Product ID" />
+                        <label>Select Product (by SKU / Name)</label>
+                        <select
+                            className="form-control"
+                            {...register('productId', { required: 'Please select a product' })}
+                        >
+                            <option value="">-- Choose Product to Restock --</option>
+                            {products.map(p => (
+                                <option key={p._id} value={p._id}>
+                                    [{p.sku}] {p.name}
+                                </option>
+                            ))}
+                        </select>
                         {errors.productId && <span className="form-error">{errors.productId.message}</span>}
                     </div>
                     <div className="form-group">

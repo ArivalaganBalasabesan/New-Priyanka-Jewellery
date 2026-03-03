@@ -29,7 +29,7 @@ const app = express();
 // ========================
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', process.env.CLIENT_URL],
     credentials: true,
 }));
 
@@ -122,11 +122,11 @@ const startServer = async () => {
         // Initialize cron jobs
         initRateUpdateCron();
 
-        app.listen(PORT, () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log('=========================================');
             console.log(`🚀 Server running in ${process.env.NODE_ENV} mode`);
-            console.log(`📡 API: http://localhost:${PORT}/api`);
-            console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
+            console.log(`📡 API: http://127.0.0.1:${PORT}/api`);
+            console.log(`❤️  Health: http://127.0.0.1:${PORT}/api/health`);
             console.log('=========================================');
         });
     } catch (error) {

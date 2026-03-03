@@ -11,7 +11,7 @@
 2. [Technology Stack](#-technology-stack)
 3. [Architecture & Design Patterns](#-architecture--design-patterns)
 4. [Folder Structure](#-folder-structure)
-5. [Module Details](#-module-details)
+5. [Team Members & Module Ownership](#-team-members--module-ownership)
 6. [Dynamic Price Engine](#-dynamic-price-engine)
 7. [Database Schema Design](#-database-schema-design)
 8. [API Endpoints](#-api-endpoints)
@@ -211,41 +211,83 @@ frontend/
 
 ---
 
-## 📦 Module Details
+## 👥 Team Members & Module Ownership
 
-### 1️⃣ Product & Pricing Management
-- **Fields**: name, category, material, weight, purity, makingCharge, stoneType, stoneWeight, status, sku
-- **IMPORTANT**: Product price is **NOT stored** in the database. It's dynamically calculated using:
-  ```
-  MetalPrice = weight × metalRate × (purity / 100)
-  StonePrice = stoneWeight × stoneRate
-  FinalPrice = MetalPrice + StonePrice + makingCharge
-  ```
-- CRUD: Create, Read (list + detail), Update, Soft Delete
+This project is divided into 6 core modules, each owned and maintained by a specific team member. Below is the breakdown of module ownership, the files associated with each component, and their specific data flows.
 
-### 2️⃣ Inventory Management
-- **Fields**: productId (ref), quantity, lowStockThreshold, lastUpdated
-- **Features**: Add stock, update stock, low stock alerts (< threshold), auto-reduce on sale
-- **Virtual field**: `isLowStock` computed from quantity vs threshold
+### 1️⃣ Product & Pricing Management (Bala)
+**Owner**: Bala
+**Core Responsibility**: Managing the jewelry catalog, defining product characteristics (weight, purity), and building the dynamic price calculation engine that fetches real-time metal and stone rates.
+**Files Involved**:
+- **Models**: `Product.js`, `MetalRate.js`, `StoneRate.js`, `PriceHistory.js`
+- **Controllers & Services**: `productController.js`, `priceController.js`, `productService.js`, `priceService.js`
+- **Routes**: `productRoutes.js`, `rateRoutes.js`
+- **Cron Jobs**: `rateUpdateJob.js`
+- **Frontend Pages**: `ProductsPage.js`, `RatesPage.js`, `CatalogPage.js`
 
-### 3️⃣ Sales & Billing
-- **Fields**: customerId, items[], discount, tax, totalAmount, finalAmount, paymentStatus, invoiceNumber
-- **Features**: Dynamic price calculation, invoice generation, cancel (admin only, restores stock)
-- **Auto-generated**: Invoice numbers (INV-YYYYMMDD-XXXX)
+**Data Flow & Diagram**:
+`External API / Cron Job` ➔ `Update Rate Models` ➔ `Price Service (Dynamic Price)` ➔ `Catalog UI`
 
-### 4️⃣ Customer Management
-- **Fields**: name, phone, email, address, loyaltyPoints, purchaseHistory
-- **Features**: CRUD, activate/deactivate, loyalty points (auto-awarded on purchase)
+### 2️⃣ Inventory & Stock Management (Sathursika)
+**Owner**: Sathursika
+**Core Responsibility**: Tracking product quantities, generating low-stock alerts, and automating stock ledger adjustments during sales or order placements.
+**Files Involved**:
+- **Models**: `Inventory.js`
+- **Controllers & Services**: `inventoryController.js`, `inventoryService.js`
+- **Routes**: `inventoryRoutes.js`
+- **Frontend Pages**: `InventoryPage.js`
 
-### 5️⃣ Custom Order Management
-- **Fields**: orderNumber, customerId, designDetails, material, estimatedPrice, status, deliveryDate
-- **Status Flow**: Pending → In Progress → Completed
-- **Features**: Create, update status, cancel, track
+**Data Flow & Diagram**:
+`Product Created` ➔ `Assign Stock Info` ➔ `Monitor Thresholds (< Low Stock Alert)` ➔ `Auto-reduce on Sale / Auto-restore on Cancel`
 
-### 6️⃣ Reporting & Admin
-- **Admin Features**: Create staff, assign roles, reset password, deactivate
-- **Reports**: Total revenue, daily/monthly sales, inventory report, top products
-- **Role-based**: Admin-only access via middleware
+### 3️⃣ Order & Custom Jewellery Workflow (Parani)
+**Owner**: Parani
+**Core Responsibility**: Managing special user requests, integrating AI visual generation (Digital Goldsmith), and overseeing the end-to-end custom design lifecycle.
+**Files Involved**:
+- **Models**: `Order.js`
+- **Controllers & Services**: `orderController.js`, `orderService.js`
+- **Routes**: `orderRoutes.js`
+- **AI Scripts**: `test-gemini-models.js`, `test-openai.js`, `test-leonardo.js`
+- **Frontend Pages**: `OrdersPage.js`, `CustomDesignsPage.js`, `CustomPhotoUploadPage.js`, `DesignJewelryPage.js`
+
+**Data Flow & Diagram**:
+`Customer Uploads/Generates AI Design` ➔ `Submit Custom Order Request` ➔ `Admin Quotes Price (Pending ➔ In-Progress)` ➔ `Delivery`
+
+### 4️⃣ Reporting, Analytics & Admin Dashboard (Sangirthana)
+**Owner**: Sangirthana
+**Core Responsibility**: Aggregating shop data into visual analytics, generating business intelligence reports, and handling administrative user roles and authentication.
+**Files Involved**:
+- **Models**: `User.js` (Admin/Staff roles)
+- **Controllers & Services**: `reportController.js`, `authController.js`, `userController.js`, `reportService.js`
+- **Routes**: `reportRoutes.js`, `authRoutes.js`, `userRoutes.js`
+- **Frontend Pages**: `ReportsPage.js`, `DashboardPage.js`, `UsersPage.js`, `LoginPage.js`
+
+**Data Flow & Diagram**:
+`Collect Sales/Inventory/Customer Data` ➔ `Report Services (Aggregate/Filter)` ➔ `REST APIs` ➔ `Dashboard Charts (Recharts)`
+
+### 5️⃣ Sales, Billing & Invoice Management (Nandujan)
+**Owner**: Nandujan
+**Core Responsibility**: Streamlining the Checkout process, computing taxes/discounts, handling secure payments, and generating downloadable PDF invoices.
+**Files Involved**:
+- **Models**: `Sale.js`
+- **Controllers & Services**: `saleController.js`, `saleService.js`
+- **Routes**: `saleRoutes.js`
+- **Frontend Pages**: `SalesPage.js`, `CartPage.js`, `CheckoutPage.js`, `PaymentSuccessPage.js`, `PaymentCancelPage.js`
+
+**Data Flow & Diagram**:
+`Add to Cart` ➔ `Secure Checkout (Stripe / Cash)` ➔ `Generate Sale Record` ➔ `Trigger PDF Invoice (jsPDF)` ➔ `Deduct Inventory`
+
+### 6️⃣ Customer Management & Loyalty System (Yalan)
+**Owner**: Yalan
+**Core Responsibility**: Maintaining the Customer CRM, developing the rewards program, assigning loyalty points, and tracking comprehensive purchase histories.
+**Files Involved**:
+- **Models**: `Customer.js`
+- **Controllers & Services**: `customerController.js`, `customerService.js`
+- **Routes**: `customerRoutes.js`
+- **Frontend Pages**: `CustomersPage.js`, `UserDashboardPage.js`, `ProfilePage.js`, `RegisterPage.js`
+
+**Data Flow & Diagram**:
+`Customer Register` ➔ `Complete a Purchase` ➔ `Calculate Reward Points (e.g., 1pt / ₹100)` ➔ `Update CRM Profile` ➔ `Redeem Points`
 
 ---
 
