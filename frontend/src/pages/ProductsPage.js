@@ -248,7 +248,7 @@ const ProductsPage = () => {
                             {errors.purity && <span className="form-error">{errors.purity.message}</span>}
                         </div>
                         <div className="form-group">
-                            <label>Making Charge (₹) *</label>
+                            <label>Making Charge (LKR) *</label>
                             <input type="number" step="0.01" className="form-control"
                                 {...register('makingCharge', { required: 'Making charge is required', min: 0 })}
                                 placeholder="e.g. 2500" />

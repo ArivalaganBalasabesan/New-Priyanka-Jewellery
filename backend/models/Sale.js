@@ -140,6 +140,7 @@ saleSchema.pre('save', async function (next) {
     next();
 });
 
+
 // Indexes
 saleSchema.index({ invoiceNumber: 1 });
 saleSchema.index({ customerId: 1 });
